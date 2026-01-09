@@ -11,11 +11,12 @@
         $email = filter_var(trim($_POST["email"]), FILTER_SANITIZE_EMAIL);
         $phone = trim($_POST["subject"]);
         $message = trim($_POST["message"]);
+        $data_ownership = isset($_POST["data_ownership"]) ? trim($_POST["data_ownership"]) : "";
         
-        if ( empty($name) OR !filter_var($email, FILTER_VALIDATE_EMAIL) OR empty($subject) OR empty($message)) {
+        if ( empty($name) OR !filter_var($email, FILTER_VALIDATE_EMAIL) OR empty($subject) OR empty($message) OR empty($data_ownership)) {
             # Set a 400 (bad request) response code and exit.
             http_response_code(400);
-            echo "Please complete the form and try again.";
+            echo "Please complete the form and confirm data ownership to proceed.";
             exit;
         }
         
@@ -24,6 +25,10 @@
         $content .= "Email: $email\n\n";
         $content .= "Subject: $subject\n";
         $content .= "Message:\n$message\n";
+        $content .= "\nData ownership confirmed: yes\n";
+        $content .= "Non-legal notice: This submission is informational and not legal advice.\n";
+        $content .= "Cloud uploads are disabled by default; the message is prepared locally in the sender's browser and only sent on submission.\n";
+        $content .= "Storage: Messages are kept only in the email inbox. Delete instantly by emailing with subject \"DELETE MY DATA\".\n";
 
         # email headers.
         $headers = "From: $name <$email>";
