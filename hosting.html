@@ -39,6 +39,7 @@
 					<li class="page-scroll"><a href="#section-intro" class="page-scroll">Home</a></li>
 					<li><a class="page-scroll" href="#section-host-features">About</a></li>
 					<li><a class="page-scroll" href="#section-host-services">services</a></li>
+					<li><a class="page-scroll" href="#section-report">report</a></li>
 					<li><a class="page-scroll" href="#section-pricing">pricing</a></li>
 					<li><a class="page-scroll" href="#section-contact">contact</a></li>
 				</ul>
@@ -524,6 +525,105 @@
 		<!-- container end -->
 	</section>
 	<!-- section testimonial end -->
+
+	<!-- section report start -->
+	<section id="section-report" class="section-padding report-section">
+		<div class="container">
+			<div class="row">
+				<div class="col-md-12">
+					<div class="section-heading text-center">
+						<h2>investigation report template</h2>
+						<div class="sec-line"></div>
+						<p class="section-subtitle">This template presents recorded inputs in a fixed structure and uses deterministic statements only.</p>
+					</div>
+				</div>
+			</div>
+			<div class="row report-actions">
+				<div class="col-md-12 text-center">
+					<button class="btn btn-black report-export" data-export="pdf">Export PDF</button>
+					<button class="btn btn-black report-export" data-export="csv">Export CSV Appendix</button>
+					<button class="btn btn-black report-export" data-export="json">Export JSON</button>
+				</div>
+			</div>
+			<div class="row report-body">
+				<div class="col-md-12">
+					<div class="report-card" id="report-content">
+						<div class="report-block">
+							<h3>Executive Summary</h3>
+							<p>Airlock Labs prepared this report from the listed inputs and verified timestamps. This summary records observed information and does not infer intent or liability.</p>
+						</div>
+						<div class="report-block">
+							<h3>Key Findings</h3>
+							<ul>
+								<li>All source items are cataloged with identifiers, dates, and ownership.</li>
+								<li>Timeline entries reflect recorded events with documented timestamps.</li>
+								<li>Corroborating sources are listed with a direct relationship to each finding.</li>
+							</ul>
+						</div>
+						<div class="report-block">
+							<h3>Timeline Excerpts</h3>
+							<ol>
+								<li><strong>2024-09-12 09:05 UTC</strong> — Intake completed for incident report AL-2041.</li>
+								<li><strong>2024-09-12 11:40 UTC</strong> — System access logs archived under evidence package EP-882.</li>
+								<li><strong>2024-09-13 08:10 UTC</strong> — Client confirmation received for scope boundaries.</li>
+							</ol>
+						</div>
+						<div class="report-block">
+							<h3>Corroborating Sources</h3>
+							<ul class="report-sources">
+								<li>Access control log export: <span>ACL-2024-09-12.csv</span></li>
+								<li>Email acknowledgment from primary stakeholder: <span>MSG-1029.eml</span></li>
+								<li>Change management record: <span>CM-7781</span></li>
+							</ul>
+						</div>
+						<div class="report-block">
+							<h3>Appendix</h3>
+							<div class="table-responsive">
+								<table class="table table-bordered report-table" id="report-appendix">
+									<thead>
+										<tr>
+											<th>Item ID</th>
+											<th>Description</th>
+											<th>Owner</th>
+											<th>Timestamp (UTC)</th>
+											<th>Reference</th>
+										</tr>
+									</thead>
+									<tbody>
+										<tr>
+											<td>APP-01</td>
+											<td>Access log archive for intake window</td>
+											<td>Security Operations</td>
+											<td>2024-09-12 11:40</td>
+											<td>EP-882</td>
+										</tr>
+										<tr>
+											<td>APP-02</td>
+											<td>Client scope confirmation email</td>
+											<td>Account Management</td>
+											<td>2024-09-13 08:10</td>
+											<td>MSG-1029</td>
+										</tr>
+										<tr>
+											<td>APP-03</td>
+											<td>Change management ticket</td>
+											<td>IT Operations</td>
+											<td>2024-09-13 15:55</td>
+											<td>CM-7781</td>
+										</tr>
+									</tbody>
+								</table>
+							</div>
+						</div>
+						<div class="report-footer">
+							<p>This report is informational and reflects the recorded materials listed above. It does not provide legal advice, ethical approval, or compliance certification. Review the contents within applicable policies and jurisdictional requirements.</p>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</section>
+	<!-- section report end -->
 	
 	<!-- section contact start -->
 	<section id="section-contact" class="section-padding">
@@ -725,8 +825,10 @@
 	<script src="js/jquery.easing.js"></script>
 	<script src="js/jquery.waypoints.min.js"></script>
 	<script type="text/javascript" src="js/wow.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" integrity="sha512-NaWTHo/8YCBYJ1txO9n1snCo3ZdMy/qL8/6GiE8u10n1M8F4L5I6Qo8X2M1RkA1PCj2BWfX0E8ddwGmUe48y2w==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 	<!-- Custom Theme JavaScript -->
 	<script src="js/hosting.js"></script>
+	<script src="js/report.js"></script>
 	 <script src="js/ajax-contact.js"></script>
 </body>
 
