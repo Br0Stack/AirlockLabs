@@ -545,7 +545,7 @@ h6 {
 }
 
 .overlay1::before {
-	background-color: rgba(0, 0, 0, 0.56);
+	/* background-color: rgba(0, 0, 0, 0.56); */
 	bottom: 0;
 	content: "";
 	left: 0;
@@ -555,7 +555,7 @@ h6 {
 }
 
 .overlay2::before {
-	background-color: rgba(255, 255, 255, 0.92);
+	/* background-color: rgba(255, 255, 255, 0.92); */
 	bottom: 0;
 	content: "";
 	left: 0;
