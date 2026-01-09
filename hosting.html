@@ -390,12 +390,59 @@
 					</ul>
 					<p><strong>Local-only export:</strong> Files are generated on-device with no network transfer.</p>
 				</div>
-				<div class="col-md-7">
-					<div class="hosting-plan">
-						<h3>Report preview</h3>
-						<p><strong>Included:</strong> Data summary, anomaly table, timeline notes.</p>
-						<p><strong>Recipients:</strong> Offline distribution only.</p>
-						<a href="#" class="btn btn-black">Export report</a>
+				<div class="col-md-8  wow fadeInRight">
+					<div class="row">
+						<form class="contact__form" method="post" action="mail.php" id="contactForm">
+							  <div class="row">
+                                <div class="col-12">
+                                    <div class="alert alert-success contact__msg" style="display: none" role="alert">
+                                        Your message was sent successfully.
+                                    </div>
+                                </div>
+                            </div>
+
+							<div class="col-md-6">
+								<div class="form-group">
+									<input type="text" id="name" name="name" class="form-control" placeholder="NAME" required data-error="type your name">
+								</div>
+							</div>
+							<div class="col-md-6">
+								<div class="form-group">
+									<input type="email" name="email" id="email" class="form-control" placeholder="EMAIL" required data-error="type your email">
+								</div>
+							</div>
+							<div class="col-md-12">
+								<div class="form-group">
+									<input type="text" name="subject" id="subject" class="form-control" placeholder="SUBJECT" required data-error="type your subject">
+								</div>
+							</div>
+							<div class="col-md-12">
+								<div class="form-group">
+									<textarea id="message" name="message" cols="30" rows="10" class="textarea-block form-control" placeholder="MESSAGE" required data-error="type your message"></textarea>
+								</div>
+							</div>
+							<div class="col-md-12">
+								<div class="form-group">
+									<label class="checkbox-inline">
+										<input type="checkbox" id="data-ownership" name="data_ownership" required>
+										I confirm I own this data or have explicit permission to share it.
+									</label>
+								</div>
+							</div>
+							<div class="col-md-12">
+								<div class="contact-disclaimer small">
+									<p><strong>Non-legal notice:</strong> We provide general information only and do not offer legal advice.</p>
+									<ul>
+										<li>Cloud uploads are disabled by default; your message is prepared locally in your browser and only sent when you click Send.</li>
+										<li>Only the message you submit is transmitted by email.</li>
+										<li>We store submissions only in our email inbox. To delete instantly, email us with the subject “DELETE MY DATA” and we will remove it upon receipt.</li>
+									</ul>
+								</div>
+							</div>
+							<div class="col-md-12  text-right wow fadeInUp text-center">
+								 <input class="btn btn-black " id="submit" name="submit" type="submit" class="btn btn-hero" value="Send Message">
+							</div>
+						</form>
 					</div>
 				</div>
 			</div>
