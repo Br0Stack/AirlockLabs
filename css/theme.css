@@ -1150,3 +1150,54 @@ h6 {
 /*	border-radius: 100%;*/
 	padding-top: 15px;
 }
+
+.report-section {
+	background: #f7f9fc;
+}
+
+.report-section .section-subtitle {
+	margin-top: 10px;
+	color: #5a6570;
+}
+
+.report-actions {
+	margin: 20px 0 30px;
+}
+
+.report-actions .btn {
+	margin: 5px 8px;
+}
+
+.report-card {
+	background: #fff;
+	border-radius: 6px;
+	box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+	padding: 30px;
+}
+
+.report-block + .report-block {
+	margin-top: 25px;
+}
+
+.report-block h3 {
+	margin-bottom: 12px;
+	text-transform: uppercase;
+	letter-spacing: 0.04em;
+	font-weight: 700;
+}
+
+.report-sources span {
+	font-weight: 600;
+}
+
+.report-table th {
+	background: #f0f4f8;
+}
+
+.report-footer {
+	margin-top: 30px;
+	padding-top: 20px;
+	border-top: 1px solid #e3e8ee;
+	font-size: 14px;
+	color: #4a5662;
+}
