@@ -23,6 +23,7 @@ export type Event = {
   description: string;
   event_date: string | null;
   confidence_score: number;
+  source: string;
   source_excerpt: string;
   created_at: string;
 };

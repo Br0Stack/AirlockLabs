@@ -42,6 +42,8 @@ def test_full_mvp_flow() -> None:
     payload = events.json()
     assert payload
     assert payload[0]['title']
+    assert payload[0]['description'].startswith('Observed in source text:')
+    assert payload[0]['source'] == 'timeline.txt'
     assert payload[0]['source_excerpt']
 
     chat = client.post(f'/workspaces/{workspace_id}/chat', json={'content': 'What happened first?'})
