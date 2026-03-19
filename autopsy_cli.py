@@ -9,10 +9,13 @@ from parser import parse_google_takeout
 from parser.anomalies import detect_anomalies
 from parser.reporting import (
     export_anomalies_json,
+    export_event_cards_json,
     export_events_csv,
     export_events_json,
+    generate_evidence_brief,
     generate_report,
     generate_timeline,
+    generate_unresolved_questions,
 )
 
 
@@ -28,14 +31,25 @@ def main() -> None:
 
     timeline_lines = generate_timeline(events)
     report_lines = generate_report(events, anomalies)
+    evidence_brief_lines = generate_evidence_brief(events, anomalies)
+    unresolved_questions = generate_unresolved_questions(events)
 
     (output_dir / "timeline.txt").write_text("\n".join(timeline_lines), encoding="utf-8")
     (output_dir / "report.txt").write_text("\n".join(report_lines), encoding="utf-8")
+    (output_dir / "evidence_brief.txt").write_text(
+        "\n".join(evidence_brief_lines),
+        encoding="utf-8",
+    )
+    (output_dir / "unresolved_questions.txt").write_text(
+        "\n".join(unresolved_questions),
+        encoding="utf-8",
+    )
     export_events_csv(events, output_dir / "events.csv")
     export_events_json(events, output_dir / "events.json")
+    export_event_cards_json(events, output_dir / "event_cards.json")
     export_anomalies_json(anomalies, output_dir / "anomalies.json")
 
-    print(f"Wrote timeline, report, and exports to {output_dir}")
+    print(f"Wrote timeline, evidence brief, and exports to {output_dir}")
 
 
 def _parse_args() -> argparse.Namespace:
