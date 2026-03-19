@@ -57,6 +57,10 @@ class Event(Base):
     workspace: Mapped[Workspace] = relationship(back_populates='events')
     document: Mapped[Document] = relationship(back_populates='events')
 
+    @property
+    def source(self) -> str:
+        return self.document.filename if self.document else f'document:{self.document_id}'
+
 
 class ChatMessage(Base):
     __tablename__ = 'chat_messages'

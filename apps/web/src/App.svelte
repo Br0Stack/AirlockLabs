@@ -118,13 +118,14 @@
 
     <section class="center">
       <TimelineView {events} {selectedEvent} onSelect={(event) => (selectedEvent = event)} />
-      <EventDetail event={selectedEvent} />
     </section>
 
     <aside class="right">
       <ChatPanel {messages} onSend={sendMessage} disabled={!selectedWorkspace || loading} />
     </aside>
   </div>
+
+  <EventDetail event={selectedEvent} onClose={() => (selectedEvent = null)} />
 </main>
 
 <style>

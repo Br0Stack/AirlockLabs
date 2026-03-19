@@ -40,20 +40,21 @@ class MockEventExtractionService:
     def extract_events(self, text: str) -> list[ExtractedEvent]:
         events: list[ExtractedEvent] = []
         for line in [row.strip() for row in text.splitlines() if row.strip()]:
+            normalized_line = ' '.join(line.split())
             date_match = DATE_PATTERN.search(line)
             event_date = None
             if date_match:
                 event_date = datetime.fromisoformat(date_match.group(1)).replace(tzinfo=timezone.utc)
 
-            if len(line) < 12:
+            if len(normalized_line) < 12:
                 continue
-            title = line[:72]
+            title = build_title(normalized_line)
             events.append(
                 ExtractedEvent(
                     title=title,
-                    description=line,
+                    description=build_grounded_description(normalized_line),
                     event_date=event_date,
-                    source_excerpt=line[:240],
+                    source_excerpt=normalized_line[:240],
                     confidence_score=0.72 if event_date else 0.55,
                 )
             )
@@ -85,3 +86,18 @@ class MockQAService:
             for event in events
         )
         return f"Based on current evidence, here are relevant events: {snippets}. Question: {question}"
+
+
+def build_title(text_line: str) -> str:
+    clipped = text_line[:72].strip()
+    if ':' in clipped:
+        return clipped.split(':', maxsplit=1)[0][:72].strip() or clipped
+    return clipped
+
+
+def build_grounded_description(text_line: str) -> str:
+    """
+    Keep descriptions factual and source-grounded by only reusing source text.
+    No speculation or inferred intent is added here.
+    """
+    return f"Observed in source text: {text_line[:280]}"

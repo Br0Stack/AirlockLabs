@@ -41,6 +41,7 @@ class EventRead(BaseModel):
     description: str
     event_date: datetime | None
     confidence_score: float
+    source: str
     source_excerpt: str
     created_at: datetime
 
