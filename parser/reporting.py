@@ -5,7 +5,7 @@ import json
 from dataclasses import asdict
 from datetime import datetime
 from pathlib import Path
-from typing import Iterable, List
+from typing import Dict, Iterable, List
 
 from .anomalies import Anomaly
 from .models import NormalizedEvent
@@ -130,6 +130,84 @@ def export_anomalies_json(anomalies: Iterable[Anomaly], output_path: Path) -> No
     output_path.write_text(json.dumps(payload, indent=2), encoding="utf-8")
 
 
+def export_event_cards_json(events: Iterable[NormalizedEvent], output_path: Path) -> None:
+    cards = build_event_cards(events)
+    output_path.write_text(json.dumps(cards, indent=2), encoding="utf-8")
+
+
+def generate_unresolved_questions(events: Iterable[NormalizedEvent]) -> List[str]:
+    ordered_events = sorted(events, key=lambda event: event.timestamp)
+    if not ordered_events:
+        return ["No events were ingested. Which files are still missing from the case workspace?"]
+
+    questions: List[str] = []
+    unknown_direction = sum(1 for event in ordered_events if event.direction == "unknown")
+    if unknown_direction:
+        questions.append(
+            f"{unknown_direction} events have unknown direction. Which source can confirm who initiated each interaction?"
+        )
+
+    missing_counterparty = sum(1 for event in ordered_events if not event.counterparty)
+    if missing_counterparty:
+        questions.append(
+            f"{missing_counterparty} events are missing counterparties. Can additional records identify the other participant?"
+        )
+
+    first_timestamp = ordered_events[0].timestamp.strftime("%Y-%m-%d")
+    last_timestamp = ordered_events[-1].timestamp.strftime("%Y-%m-%d")
+    questions.append(
+        f"Timeline currently spans {first_timestamp} to {last_timestamp}. Are there missing exports before or after this window?"
+    )
+    return questions
+
+
+def generate_evidence_brief(events: Iterable[NormalizedEvent], anomalies: Iterable[Anomaly]) -> List[str]:
+    ordered_events = sorted(events, key=lambda event: event.timestamp)
+    ordered_anomalies = list(anomalies)
+    lines = [
+        "Case Timeline Builder - Evidence Brief",
+        "=" * 37,
+        "",
+        "Event Cards",
+        "-" * 11,
+    ]
+    cards = build_event_cards(ordered_events)
+    if cards:
+        for card in cards[:20]:
+            lines.append(
+                f"- [{card['timestamp']}] {card['summary']} "
+                f"(confidence={card['confidence']:.2f}, source={card['source_reference']})"
+            )
+        if len(cards) > 20:
+            lines.append(f"... {len(cards) - 20} additional cards not shown.")
+    else:
+        lines.append("No events available.")
+
+    lines.extend(
+        [
+            "",
+            "Unresolved Questions",
+            "-" * 19,
+        ]
+    )
+    for question in generate_unresolved_questions(ordered_events):
+        lines.append(f"- {question}")
+
+    lines.extend(
+        [
+            "",
+            "Potential Contradictions / Flags",
+            "-" * 32,
+        ]
+    )
+    if ordered_anomalies:
+        for anomaly in ordered_anomalies:
+            lines.append(f"- {anomaly.summary}")
+    else:
+        lines.append("- No anomaly flags from the current rule set.")
+    return lines
+
+
 def _format_event(event: NormalizedEvent) -> str:
     timestamp = _format_timestamp(event.timestamp)
     direction = f" ({event.direction})" if event.direction != "unknown" else ""
@@ -166,3 +244,23 @@ def _serialize_event(event: NormalizedEvent) -> dict:
         },
         "metadata": event.metadata,
     }
+
+
+def build_event_cards(events: Iterable[NormalizedEvent]) -> List[Dict[str, object]]:
+    ordered_events = sorted(events, key=lambda event: event.timestamp)
+    cards: List[Dict[str, object]] = []
+    for index, event in enumerate(ordered_events, start=1):
+        confidence = float(event.metadata.get("confidence", 0.5))
+        direction = f" ({event.direction})" if event.direction != "unknown" else ""
+        counterparty = f" with {event.counterparty}" if event.counterparty else ""
+        cards.append(
+            {
+                "event_id": f"evt-{index:05d}",
+                "timestamp": event.timestamp.isoformat(),
+                "summary": f"{event.provider} {event.event_type}{direction}{counterparty}",
+                "event_type": event.event_type,
+                "confidence": max(0.0, min(1.0, confidence)),
+                "source_reference": f"{event.raw_reference.source_file}:{event.raw_reference.line_number}",
+            }
+        )
+    return cards
