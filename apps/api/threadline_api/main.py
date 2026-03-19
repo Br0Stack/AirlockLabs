@@ -1,9 +1,9 @@
 from __future__ import annotations
 
-from datetime import timezone
 from pathlib import Path
 
 from fastapi import Depends, FastAPI, File, HTTPException, UploadFile
+from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 
 from .db import Base, engine, get_db
@@ -14,6 +14,13 @@ from .services.text_extraction import extract_text_from_bytes
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title='Threadline API', version='0.1.0')
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=['*'],
+    allow_credentials=True,
+    allow_methods=['*'],
+    allow_headers=['*'],
+)
 
 UPLOAD_ROOT = Path('apps/api/.data/uploads')
 UPLOAD_ROOT.mkdir(parents=True, exist_ok=True)
@@ -36,30 +43,30 @@ def list_workspaces(db: Session = Depends(get_db)):
     return db.query(models.Workspace).order_by(models.Workspace.created_at.desc()).all()
 
 
-@app.get('/workspaces/{workspace_id}', response_model=schemas.WorkspaceRead)
-def get_workspace(workspace_id: int, db: Session = Depends(get_db)):
-    workspace = db.get(models.Workspace, workspace_id)
+@app.get('/workspaces/{id}', response_model=schemas.WorkspaceRead)
+def get_workspace(id: int, db: Session = Depends(get_db)):
+    workspace = db.get(models.Workspace, id)
     if not workspace:
         raise HTTPException(status_code=404, detail='Workspace not found')
     return workspace
 
 
-@app.post('/workspaces/{workspace_id}/documents', response_model=schemas.DocumentRead)
-async def upload_document(workspace_id: int, file: UploadFile = File(...), db: Session = Depends(get_db)):
-    workspace = db.get(models.Workspace, workspace_id)
+@app.post('/workspaces/{id}/documents', response_model=schemas.DocumentRead)
+async def upload_document(id: int, file: UploadFile = File(...), db: Session = Depends(get_db)):
+    workspace = db.get(models.Workspace, id)
     if not workspace:
         raise HTTPException(status_code=404, detail='Workspace not found')
 
     payload = await file.read()
     text = extract_text_from_bytes(file.filename or 'upload.bin', payload)
     filename = file.filename or 'upload.bin'
-    workspace_dir = UPLOAD_ROOT / str(workspace_id)
+    workspace_dir = UPLOAD_ROOT / str(id)
     workspace_dir.mkdir(parents=True, exist_ok=True)
     saved_path = workspace_dir / filename
     saved_path.write_bytes(payload)
 
     document = models.Document(
-        workspace_id=workspace_id,
+        workspace_id=id,
         filename=filename,
         file_type=file.content_type or 'application/octet-stream',
         path=str(saved_path),
@@ -71,19 +78,29 @@ async def upload_document(workspace_id: int, file: UploadFile = File(...), db: S
     return document
 
 
-@app.get('/workspaces/{workspace_id}/documents', response_model=list[schemas.DocumentRead])
-def list_documents(workspace_id: int, db: Session = Depends(get_db)):
+@app.get('/workspaces/{id}/documents', response_model=list[schemas.DocumentRead])
+def list_documents(id: int, db: Session = Depends(get_db)):
+    workspace = db.get(models.Workspace, id)
+    if not workspace:
+        raise HTTPException(status_code=404, detail='Workspace not found')
     return (
         db.query(models.Document)
-        .filter(models.Document.workspace_id == workspace_id)
+        .filter(models.Document.workspace_id == id)
         .order_by(models.Document.uploaded_at.desc())
         .all()
     )
 
 
-@app.post('/workspaces/{workspace_id}/extract-events', response_model=schemas.ExtractEventsResponse)
-def extract_events(workspace_id: int, db: Session = Depends(get_db)):
-    documents = db.query(models.Document).filter(models.Document.workspace_id == workspace_id).all()
+@app.post('/workspaces/{id}/extract-events', response_model=schemas.ExtractEventsResponse)
+def extract_events(id: int, db: Session = Depends(get_db)):
+    workspace = db.get(models.Workspace, id)
+    if not workspace:
+        raise HTTPException(status_code=404, detail='Workspace not found')
+
+    db.query(models.Event).filter(models.Event.workspace_id == id).delete(synchronize_session=False)
+    db.commit()
+
+    documents = db.query(models.Document).filter(models.Document.workspace_id == id).all()
     if not documents:
         raise HTTPException(status_code=400, detail='No documents uploaded')
 
@@ -92,7 +109,7 @@ def extract_events(workspace_id: int, db: Session = Depends(get_db)):
         extracted = extractor.extract_events(document.raw_text)
         for candidate in extracted:
             event = models.Event(
-                workspace_id=workspace_id,
+                workspace_id=id,
                 document_id=document.id,
                 title=candidate.title,
                 description=candidate.description,
@@ -110,11 +127,14 @@ def extract_events(workspace_id: int, db: Session = Depends(get_db)):
     return schemas.ExtractEventsResponse(created=len(created_events), events=created_events)
 
 
-@app.get('/workspaces/{workspace_id}/events', response_model=list[schemas.EventRead])
-def list_events(workspace_id: int, db: Session = Depends(get_db)):
+@app.get('/workspaces/{id}/events', response_model=list[schemas.EventRead])
+def list_events(id: int, db: Session = Depends(get_db)):
+    workspace = db.get(models.Workspace, id)
+    if not workspace:
+        raise HTTPException(status_code=404, detail='Workspace not found')
     events = (
         db.query(models.Event)
-        .filter(models.Event.workspace_id == workspace_id)
+        .filter(models.Event.workspace_id == id)
         .order_by(models.Event.event_date.asc().nulls_last(), models.Event.created_at.asc())
         .all()
     )
@@ -136,18 +156,18 @@ def update_event(event_id: int, payload: schemas.EventUpdate, db: Session = Depe
     return event
 
 
-@app.post('/workspaces/{workspace_id}/chat', response_model=schemas.ChatResponse)
-def workspace_chat(workspace_id: int, payload: schemas.ChatRequest, db: Session = Depends(get_db)):
-    workspace = db.get(models.Workspace, workspace_id)
+@app.post('/workspaces/{id}/chat', response_model=schemas.ChatResponse)
+def workspace_chat(id: int, payload: schemas.ChatRequest, db: Session = Depends(get_db)):
+    workspace = db.get(models.Workspace, id)
     if not workspace:
         raise HTTPException(status_code=404, detail='Workspace not found')
 
-    user_msg = models.ChatMessage(workspace_id=workspace_id, role='user', content=payload.content)
+    user_msg = models.ChatMessage(workspace_id=id, role='user', content=payload.content)
     db.add(user_msg)
     db.flush()
 
-    answer = qa_service.answer(db, workspace_id, payload.content)
-    assistant_msg = models.ChatMessage(workspace_id=workspace_id, role='assistant', content=answer)
+    answer = qa_service.answer(db, id, payload.content)
+    assistant_msg = models.ChatMessage(workspace_id=id, role='assistant', content=answer)
     db.add(assistant_msg)
     db.commit()
     db.refresh(user_msg)
